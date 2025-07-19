@@ -4,6 +4,14 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 require('dotenv').config();
 
+// Import database and models
+const { sequelize, testConnection } = require('./config/database');
+const { User, Todo } = require('./models');
+
+// Import routes
+const authRoutes = require('./routes/auth');
+const todoRoutes = require('./routes/todos');
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -28,6 +36,10 @@ app.get('/health', (req, res) => {
   });
 });
 
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/todos', todoRoutes);
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -43,9 +55,27 @@ app.use('*', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
-});
+const startServer = async () => {
+  try {
+    // Test database connection
+    await testConnection();
+    
+    // Sync database tables
+    await sequelize.sync({ force: false });
+    console.log('✅ Database tables synchronized');
+    
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📊 Health check: http://localhost:${PORT}/health`);
+      console.log(`🔐 Auth endpoints: http://localhost:${PORT}/api/auth`);
+      console.log(`📝 Todo endpoints: http://localhost:${PORT}/api/todos`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 module.exports = app; 
