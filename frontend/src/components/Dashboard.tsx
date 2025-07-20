@@ -74,9 +74,9 @@ const Dashboard: React.FC = () => {
     return todos.filter(todo => todo.status === status).length;
   };
 
-  const getPriorityCount = (priority: string) => {
-    return todos.filter(todo => todo.priority === priority).length;
-  };
+  // const getPriorityCount = (priority: string) => {
+  //   return todos.filter(todo => todo.priority === priority).length;
+  // };
 
   if (loading) {
     return (
